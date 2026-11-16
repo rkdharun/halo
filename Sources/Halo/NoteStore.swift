@@ -1,4 +1,4 @@
-import Foundation
+import AppKit
 
 class NoteStore: ObservableObject {
     @Published var notes: [Note] = []
@@ -15,13 +15,29 @@ class NoteStore: ObservableObject {
         let dir = support.appendingPathComponent("Halo")
         // The app used to be called Mersal Memo — carry its notes over on first launch
         let legacyDir = support.appendingPathComponent("MersalMemo")
+        var migrated = false
         if !FileManager.default.fileExists(atPath: dir.path),
            FileManager.default.fileExists(atPath: legacyDir.path) {
-            try? FileManager.default.moveItem(at: legacyDir, to: dir)
+            migrated = (try? FileManager.default.moveItem(at: legacyDir, to: dir)) != nil
         }
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         storageURL = dir.appendingPathComponent("notes.json")
         load()
+
+        // Pasted images are linked by absolute path — point them at the moved folder
+        if migrated {
+            let oldImages = legacyDir.appendingPathComponent("images").path
+            let newImages = dir.appendingPathComponent("images").path
+            for i in notes.indices where notes[i].content.contains(oldImages) {
+                notes[i].content = notes[i].content.replacingOccurrences(of: oldImages, with: newImages)
+            }
+            save()
+        }
+
+        // Typing is saved on a debounce — don't lose the last edits when the app quits
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.willTerminateNotification, object: nil, queue: nil
+        ) { [weak self] _ in self?.flushAll() }
 
         if notes.isEmpty {
             let welcome = Note(content: "Welcome to Halo\n\nStart typing to write your first note.\n\nTips:\n• ⌘N — new note\n• ⌘⇧P — pin window on top of all apps\n• Right-click a note to delete it")
@@ -106,6 +122,19 @@ class NoteStore: ObservableObject {
         save()
     }
 
+    // Commits every in-flight edit and writes to disk immediately
+    func flushAll() {
+        saveWorkItem?.cancel()
+        titleSaveWorkItem?.cancel()
+        for (id, content) in pendingContent {
+            guard let idx = notes.firstIndex(where: { $0.id == id }) else { continue }
+            notes[idx].content = content
+            notes[idx].updatedAt = Date()
+        }
+        pendingContent.removeAll()
+        save()
+    }
+
     private func scheduleSave(for noteId: UUID) {
         saveWorkItem?.cancel()
         let item = DispatchWorkItem { [weak self] in
@@ -121,8 +150,15 @@ class NoteStore: ObservableObject {
     }
 
     private func load() {
-        guard let data = try? Data(contentsOf: storageURL),
-              let decoded = try? JSONDecoder().decode([Note].self, from: data) else { return }
+        guard let data = try? Data(contentsOf: storageURL) else { return }
+        guard let decoded = try? JSONDecoder().decode([Note].self, from: data) else {
+            // Unreadable file: set it aside rather than letting the welcome note overwrite it
+            let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
+            let backup = storageURL.deletingLastPathComponent()
+                .appendingPathComponent("notes-unreadable-\(stamp).json")
+            try? FileManager.default.moveItem(at: storageURL, to: backup)
+            return
+        }
         notes = decoded
         selectedNoteId = notes.first?.id
     }

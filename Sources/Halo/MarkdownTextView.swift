@@ -6,8 +6,9 @@ class MarkdownTextView: NSTextView {
     private var imageViews: [Int: NSImageView] = [:]
     // Loaded image cache keyed by URL string to avoid re-reading on every highlight pass
     private var imageCache: [String: NSImage] = [:]
-    // Copy buttons keyed by code block start location
+    // Copy buttons and language labels keyed by code block start location
     private var copyButtons: [Int: NSButton] = [:]
+    private var languageLabels: [Int: NSTextField] = [:]
     // Code block content ranges keyed by start location (for copy action)
     private var codeRanges: [Int: NSRange] = [:]
 
@@ -168,17 +169,17 @@ class MarkdownTextView: NSTextView {
             blockRect = blockRect.insetBy(dx: -2, dy: -4)
 
             // Language label (static NSTextField)
-            let labelKey = -(loc + 1)
-            if !language.isEmpty {
-                let lbl = copyButtons[labelKey] as? NSTextField ?? {
+            if language.isEmpty {
+                languageLabels.removeValue(forKey: loc)?.removeFromSuperview()
+            } else {
+                let lbl = languageLabels[loc] ?? {
                     let f = NSTextField(labelWithString: "")
                     f.font = NSFont.monospacedSystemFont(ofSize: 10, weight: .medium)
                     f.textColor = .secondaryLabelColor
                     f.backgroundColor = .clear
                     f.isBezeled = false
                     addSubview(f)
-                    // reuse copyButtons dict slot with negative key
-                    copyButtons[labelKey] = f as? NSButton
+                    languageLabels[loc] = f
                     return f
                 }()
                 lbl.stringValue = language
@@ -205,11 +206,15 @@ class MarkdownTextView: NSTextView {
                                width: btnSize.width, height: btnSize.height)
         }
 
-        // Remove stale buttons
-        for (loc, view) in copyButtons where !seenLocs.contains(loc) && !seenLocs.contains(-(loc + 1)) {
+        // Remove stale buttons and labels
+        for (loc, view) in copyButtons where !seenLocs.contains(loc) {
             view.removeFromSuperview()
             copyButtons.removeValue(forKey: loc)
             codeRanges.removeValue(forKey: loc)
+        }
+        for (loc, label) in languageLabels where !seenLocs.contains(loc) {
+            label.removeFromSuperview()
+            languageLabels.removeValue(forKey: loc)
         }
     }
 

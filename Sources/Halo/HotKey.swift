@@ -53,6 +53,8 @@ final class GlobalHotKey {
     static let shared = GlobalHotKey()
 
     var onPress: () -> Void = {}
+    // False when the system refused the last combination (e.g. it's reserved)
+    private(set) var isRegistered = false
     private var hotKeyRef: EventHotKeyRef?
 
     private init() {
@@ -68,13 +70,15 @@ final class GlobalHotKey {
     func register(_ shortcut: HotKeyShortcut) {
         unregister()
         let id = EventHotKeyID(signature: OSType(0x4D4D454D), id: 1)  // 'MMEM'
-        RegisterEventHotKey(shortcut.keyCode, shortcut.carbonModifiers, id,
-                            GetApplicationEventTarget(), 0, &hotKeyRef)
+        let status = RegisterEventHotKey(shortcut.keyCode, shortcut.carbonModifiers, id,
+                                         GetApplicationEventTarget(), 0, &hotKeyRef)
+        isRegistered = status == noErr
     }
 
     func unregister() {
         guard let ref = hotKeyRef else { return }
         UnregisterEventHotKey(ref)
         hotKeyRef = nil
+        isRegistered = false
     }
 }

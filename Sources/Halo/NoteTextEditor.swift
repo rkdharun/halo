@@ -50,6 +50,7 @@ struct NoteTextEditor: NSViewRepresentable {
 
         context.coordinator.setupMouseMonitor()
         context.coordinator.setupHoverMonitor(for: tv)
+        context.coordinator.setupResizeObserver(for: scrollView)
 
         return scrollView
     }
@@ -60,6 +61,8 @@ struct NoteTextEditor: NSViewRepresentable {
 
         let savedRanges = tv.selectedRanges
         tv.string = text
+        // A different note was loaded — the old note's undo steps no longer apply
+        tv.undoManager?.removeAllActions()
 
         let len = (text as NSString).length
         if len == 0 || savedRanges.isEmpty {
@@ -91,6 +94,8 @@ struct NoteTextEditor: NSViewRepresentable {
         private var findObserver: Any?
         private var mouseMonitor: Any?
         private var hoverMonitor: Any?
+        private var resizeObserver: Any?
+        private var lastHighlightWidth: CGFloat = 0
 
         // Selection saved so toolbar buttons don't lose multi-line selections
         private var savedRanges: [NSValue] = []
@@ -157,6 +162,7 @@ struct NoteTextEditor: NSViewRepresentable {
             if let obs = findObserver   { NotificationCenter.default.removeObserver(obs) }
             if let mon = mouseMonitor   { NSEvent.removeMonitor(mon) }
             if let mon = hoverMonitor   { NSEvent.removeMonitor(mon) }
+            if let obs = resizeObserver { NotificationCenter.default.removeObserver(obs) }
             showTimer?.invalidate()
             hideTimer?.invalidate()
         }
@@ -424,6 +430,17 @@ struct NoteTextEditor: NSViewRepresentable {
 
         // MARK: – Highlighting
 
+        // Wrap width is baked into the paragraph style, so re-highlight when the width changes
+        func setupResizeObserver(for sv: NSScrollView) {
+            sv.postsFrameChangedNotifications = true
+            resizeObserver = NotificationCenter.default.addObserver(
+                forName: NSView.frameDidChangeNotification, object: sv, queue: .main
+            ) { [weak self] _ in
+                guard let self, sv.frame.width != self.lastHighlightWidth else { return }
+                self.reapplyHighlighting()
+            }
+        }
+
         func reapplyHighlighting() {
             guard let sv = scrollView, let tv = textView,
                   let storage = tv.textStorage else { return }
@@ -433,6 +450,7 @@ struct NoteTextEditor: NSViewRepresentable {
             sv.autohidesScrollers = true
             let inset      = tv.textContainerInset.width
             let frameWidth = sv.frame.width > 0 ? sv.frame.width : 400
+            lastHighlightWidth = sv.frame.width
             MarkdownHighlighter.apply(to: storage, wrapWidth: frameWidth - 2 * inset)
             (tv as? MarkdownTextView)?.updateImageViews()
         }

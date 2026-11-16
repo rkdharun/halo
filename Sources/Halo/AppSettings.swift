@@ -26,10 +26,12 @@ class AppSettings: ObservableObject {
 
     private init() {
         // The app used to be called Mersal Memo (com.mersalmemo.app) — carry its settings over once
-        if UserDefaults.standard.object(forKey: "bubblePosition") == nil,
-           let legacy = UserDefaults(suiteName: "com.mersalmemo.app") {
-            for key in ["bubblePosition", "windowOpacity", "hotKeyCode", "hotKeyModifiers", "hotKeyName"] {
-                if let value = legacy.object(forKey: key) { UserDefaults.standard.set(value, forKey: key) }
+        if !UserDefaults.standard.bool(forKey: "didMigrateMersalMemo") {
+            UserDefaults.standard.set(true, forKey: "didMigrateMersalMemo")
+            if let legacy = UserDefaults(suiteName: "com.mersalmemo.app") {
+                for key in ["bubblePosition", "windowOpacity", "hotKeyCode", "hotKeyModifiers", "hotKeyName"] {
+                    if let value = legacy.object(forKey: key) { UserDefaults.standard.set(value, forKey: key) }
+                }
             }
         }
 

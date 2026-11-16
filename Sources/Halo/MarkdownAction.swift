@@ -34,9 +34,10 @@ enum MarkdownAction {
         tv.didChangeText()
 
         if selected.isEmpty {
-            tv.setSelectedRange(NSRange(location: range.location + pre.count, length: inner.count))
+            // NSRange offsets are UTF-16 units, not Characters
+            tv.setSelectedRange(NSRange(location: range.location + pre.utf16.count, length: inner.utf16.count))
         } else {
-            tv.setSelectedRange(NSRange(location: range.location + replacement.count, length: 0))
+            tv.setSelectedRange(NSRange(location: range.location + replacement.utf16.count, length: 0))
         }
     }
 
@@ -106,7 +107,7 @@ enum MarkdownAction {
             // Wrap selection; strip leading/trailing newlines so fences sit on their own lines
             let trimmed = selected.trimmingCharacters(in: .newlines)
             replacement = "```\n\(trimmed)\n```"
-            cursorAfter = NSRange(location: range.location + replacement.count, length: 0)
+            cursorAfter = NSRange(location: range.location + replacement.utf16.count, length: 0)
         }
 
         guard tv.shouldChangeText(in: range, replacementString: replacement) else { return }
@@ -125,7 +126,7 @@ enum MarkdownAction {
         tv.textStorage?.replaceCharacters(in: range, with: replacement)
         tv.didChangeText()
 
-        let urlStart = range.location + 1 + linkText.count + 2
+        let urlStart = range.location + 1 + linkText.utf16.count + 2
         tv.setSelectedRange(NSRange(location: urlStart, length: 3))
     }
 }

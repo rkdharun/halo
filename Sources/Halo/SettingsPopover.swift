@@ -112,6 +112,12 @@ private struct ShortcutRecorder: View {
         .buttonStyle(.plain)
         .foregroundColor(isRecording ? .orange : .primary)
         .onDisappear { stop() }
+
+        if !isRecording && !GlobalHotKey.shared.isRegistered {
+            Text("This shortcut isn't available — try another.")
+                .font(.system(size: 10))
+                .foregroundColor(.red)
+        }
     }
 
     private func start() {

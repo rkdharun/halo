@@ -61,7 +61,8 @@ final class BubblePanel: NSPanel {
         isOpaque = false
         backgroundColor = .clear
         hasShadow = false
-        level = .floating
+        // Above .floating: other apps' floating panels share that level and can stack over the bubble
+        level = .statusBar
         hidesOnDeactivate = false
         isReleasedWhenClosed = false
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]

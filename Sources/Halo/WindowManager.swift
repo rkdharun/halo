@@ -18,8 +18,10 @@ final class WindowManager {
             forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
         ) { [weak self] note in
             guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
-                  app != NSRunningApplication.current else { return }
-            self?.previousApp = app
+                  app != NSRunningApplication.current, let self else { return }
+            self.previousApp = app
+            // Another app just came forward — make sure nothing it raised sits over the bubble
+            if self.isBubble { self.bubblePanel.orderFrontRegardless() }
         }
     }
 
