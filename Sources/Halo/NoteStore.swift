@@ -12,13 +12,19 @@ class NoteStore: ObservableObject {
 
     init() {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        let dir = support.appendingPathComponent("MersalMemo")
+        let dir = support.appendingPathComponent("Halo")
+        // The app used to be called Mersal Memo — carry its notes over on first launch
+        let legacyDir = support.appendingPathComponent("MersalMemo")
+        if !FileManager.default.fileExists(atPath: dir.path),
+           FileManager.default.fileExists(atPath: legacyDir.path) {
+            try? FileManager.default.moveItem(at: legacyDir, to: dir)
+        }
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         storageURL = dir.appendingPathComponent("notes.json")
         load()
 
         if notes.isEmpty {
-            let welcome = Note(content: "Welcome to Mersal Memo\n\nStart typing to write your first note.\n\nTips:\n• ⌘N — new note\n• ⌘⇧P — pin window on top of all apps\n• Right-click a note to delete it")
+            let welcome = Note(content: "Welcome to Halo\n\nStart typing to write your first note.\n\nTips:\n• ⌘N — new note\n• ⌘⇧P — pin window on top of all apps\n• Right-click a note to delete it")
             notes = [welcome]
             selectedNoteId = welcome.id
             save()

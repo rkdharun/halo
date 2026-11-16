@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "MersalMemo",
+    name: "Halo",
     platforms: [.macOS(.v13)],
     targets: [
         .executableTarget(
-            name: "MersalMemo",
-            path: "Sources/MersalMemo"
+            name: "Halo",
+            path: "Sources/Halo"
         )
     ]
 )

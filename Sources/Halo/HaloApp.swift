@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct MersalMemoApp: App {
+struct HaloApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var store = NoteStore()
 
@@ -48,9 +48,9 @@ struct MersalMemoApp: App {
 }
 
 extension Notification.Name {
-    static let createNote          = Notification.Name("mersalmemo.createNote")
-    static let selectPreviousNote  = Notification.Name("mersalmemo.selectPreviousNote")
-    static let selectNextNote      = Notification.Name("mersalmemo.selectNextNote")
-    static let findInNote          = Notification.Name("mersalmemo.findInNote")
-    static let showNoteSearch      = Notification.Name("mersalmemo.showNoteSearch")
+    static let createNote          = Notification.Name("halo.createNote")
+    static let selectPreviousNote  = Notification.Name("halo.selectPreviousNote")
+    static let selectNextNote      = Notification.Name("halo.selectNextNote")
+    static let findInNote          = Notification.Name("halo.findInNote")
+    static let showNoteSearch      = Notification.Name("halo.showNoteSearch")
 }

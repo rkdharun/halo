@@ -1,4 +1,4 @@
-# Mersal Memo
+# Halo
 
 A lightweight, floating markdown note-taking app for macOS. Lives in a corner of your screen as a small bubble — click to expand, write fast, collapse and get back to work.
 
@@ -17,7 +17,8 @@ A lightweight, floating markdown note-taking app for macOS. Lives in a corner of
 
 **Bubble mode**
 - Collapses to a small floating circle in any corner of your screen
-- Stays out of the way until you need it
+- Stays out of the way until you need it — one click opens the note, even while another app is in front
+- Drag the bubble to move it
 - Configurable position: top-left, top-right, bottom-left, bottom-right
 
 **Note management**
@@ -36,6 +37,7 @@ A lightweight, floating markdown note-taking app for macOS. Lives in a corner of
 
 | Shortcut | Action |
 |---|---|
+| `Ctrl+Option+N` | Show / hide Halo from any app (change it in Settings) |
 | `Cmd+N` | New note |
 | `Cmd+[` | Previous note |
 | `Cmd+]` | Next note |
@@ -56,11 +58,17 @@ Requires Xcode or the Swift toolchain on macOS 13+.
 ./run.sh
 ```
 
+Install an optimized build into `/Applications`:
+
+```bash
+./install.sh
+```
+
 Or build manually:
 
 ```bash
 swift build
-.build/debug/MersalMemo
+.build/debug/Halo
 ```
 
 ---
@@ -69,7 +77,7 @@ swift build
 
 Notes are stored at:
 ```
-~/Library/Application Support/MersalMemo/notes.json
+~/Library/Application Support/Halo/notes.json
 ```
 
 ---

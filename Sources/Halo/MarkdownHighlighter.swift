@@ -2,9 +2,9 @@ import AppKit
 
 struct MarkdownHighlighter {
     static let fontSize: CGFloat = 15
-    static let checkboxKey  = NSAttributedString.Key("mersalmemo.checkboxState")
-    static let imageURLKey  = NSAttributedString.Key("mersalmemo.imageURL")
-    static let codeBlockKey = NSAttributedString.Key("mersalmemo.codeBlock")
+    static let checkboxKey  = NSAttributedString.Key("halo.checkboxState")
+    static let imageURLKey  = NSAttributedString.Key("halo.imageURL")
+    static let codeBlockKey = NSAttributedString.Key("halo.codeBlock")
 
     // Background-matching color hides text while keeping layout intact.
     private static var hiddenColor: NSColor { .textBackgroundColor }

@@ -6,7 +6,6 @@ struct FloatingHeader: View {
     @EnvironmentObject var store: NoteStore
     @EnvironmentObject var settings: AppSettings
     @Binding var isPinned: Bool
-    @Binding var isBubble: Bool
     @State private var showNoteList = false
     @State private var showSettings = false
     @State private var newNoteFlash = false
@@ -71,8 +70,8 @@ struct FloatingHeader: View {
             .keyboardShortcut("p", modifiers: [.command, .shift])
 
             // Bubble
-            HdrBtn(icon: "circle.fill", tint: .orange) { isBubble = true }
-                .help("Collapse to Bubble")
+            HdrBtn(icon: "circle.fill", tint: .orange) { WindowManager.shared.collapse() }
+                .help("Collapse to Bubble (\(settings.hotKey.displayString))")
 
             // Settings
             HdrBtn(icon: "gearshape") { showSettings.toggle() }

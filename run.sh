@@ -2,14 +2,14 @@
 set -e
 cd "$(dirname "$0")"
 
-echo "Building Mersal Memo..."
+echo "Building Halo..."
 swift build
 
-APP="MersalMemo.app"
+APP="Halo.app"
 mkdir -p "$APP/Contents/MacOS"
 mkdir -p "$APP/Contents/Resources"
 
-cp .build/debug/MersalMemo "$APP/Contents/MacOS/MersalMemo"
+cp .build/debug/Halo "$APP/Contents/MacOS/Halo"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 if [ -f "$SCRIPT_DIR/AppIcon.icns" ]; then
@@ -22,11 +22,11 @@ cat > "$APP/Contents/Info.plist" << 'EOF'
 <plist version="1.0">
 <dict>
     <key>CFBundleExecutable</key>
-    <string>MersalMemo</string>
+    <string>Halo</string>
     <key>CFBundleIdentifier</key>
-    <string>com.mersalmemo.app</string>
+    <string>com.rkdharun.halo</string>
     <key>CFBundleName</key>
-    <string>Mersal Memo</string>
+    <string>Halo</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleVersion</key>
@@ -47,5 +47,5 @@ cat > "$APP/Contents/Info.plist" << 'EOF'
 </plist>
 EOF
 
-echo "Launching Mersal Memo..."
+echo "Launching Halo..."
 open "$APP"

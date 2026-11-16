@@ -1,4 +1,5 @@
 import SwiftUI
+import Carbon.HIToolbox
 
 struct SettingsPopover: View {
     @EnvironmentObject var settings: AppSettings
@@ -49,6 +50,16 @@ struct SettingsPopover: View {
                     .accentColor(.orange)
             }
             .padding(12)
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Show / Hide Shortcut")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.secondary)
+                ShortcutRecorder(shortcut: $settings.hotKey)
+            }
+            .padding(12)
         }
         .frame(width: 210)
     }
@@ -73,5 +84,56 @@ struct SettingsPopover: View {
         }
         .buttonStyle(.plain)
         .foregroundColor(settings.bubblePosition == pos ? .orange : .primary)
+    }
+}
+
+/// Click, then press the new combination. Esc cancels. The global hotkey is paused while
+/// recording so pressing the current combination records it instead of firing it.
+private struct ShortcutRecorder: View {
+    @Binding var shortcut: HotKeyShortcut
+    @State private var isRecording = false
+    @State private var monitor: Any?
+
+    var body: some View {
+        Button { isRecording ? stop() : start() } label: {
+            Text(isRecording ? "Type shortcut…" : shortcut.displayString)
+                .font(.system(size: 11, weight: .medium))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 5)
+                .background(
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(isRecording ? Color.orange.opacity(0.18) : Color.secondary.opacity(0.08))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 5)
+                        .stroke(isRecording ? Color.orange.opacity(0.6) : Color.clear, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .foregroundColor(isRecording ? .orange : .primary)
+        .onDisappear { stop() }
+    }
+
+    private func start() {
+        GlobalHotKey.shared.unregister()
+        isRecording = true
+        monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            if event.keyCode == UInt16(kVK_Escape) {
+                stop()
+            } else if let recorded = HotKeyShortcut(event: event) {
+                shortcut = recorded
+                stop()
+            } else {
+                NSSound.beep()  // needs ⌘, ⌥ or ⌃
+            }
+            return nil
+        }
+    }
+
+    private func stop() {
+        if let monitor { NSEvent.removeMonitor(monitor) }
+        monitor = nil
+        isRecording = false
+        GlobalHotKey.shared.register(shortcut)
     }
 }

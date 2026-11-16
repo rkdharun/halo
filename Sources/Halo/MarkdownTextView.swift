@@ -14,7 +14,7 @@ class MarkdownTextView: NSTextView {
     // App Support directory where pasted images are saved
     private static let imageDir: URL = {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        let dir = base.appendingPathComponent("MersalMemo/images", isDirectory: true)
+        let dir = base.appendingPathComponent("Halo/images", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
     }()
